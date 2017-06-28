@@ -1,0 +1,6 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: ingress-VERSION
+  labels:
+    name: ingress-VERSION

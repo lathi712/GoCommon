@@ -1,0 +1,53 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: nginx-ENV_NAME
+  namespace: ingress-ENV_NAME
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: nginx
+#        eg., mui_211, mui_212
+        ver: BUILD_VERSION
+#        eg., R17_3_211, R17_3_212
+        isLive: "true"
+        stage: live
+#        eg., live+1, live, live-1, live-2, live-3
+        feature: BRANCH_NAME
+        datetime: "DATE-TIME"
+#        eg., 20170308225301
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+#        command: ["/bin/sh", "-c","rm -rf /etc/nginx/conf.d"]
+        ports:
+        - containerPort: 443
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1000Mi
+          requests:
+            cpu: 500m
+            memory: 1000Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          timeoutSeconds: 1
+        volumeMounts:
+        - mountPath: /etc/nginx/ssl
+          name: cert-volume
+        - mountPath: /etc/nginx/conf.d
+          name: siteconfig-volume
+      volumes:
+      - name: cert-volume
+        secret:
+          secretName: tls-cert-ENV_NAME
+      - name: siteconfig-volume
+        configMap:
+          name: sites-config-ENV_NAME

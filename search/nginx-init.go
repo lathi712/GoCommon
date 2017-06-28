@@ -6,9 +6,8 @@ import (
 	"os/exec"
 )
 
-
 /*Function to invoke Environments depending on the User Input
-  lle - low level environment,hle - high level environment and prod - production*/ 
+  lle - low level environment,hle - high level environment and prod - production*/
 func kubecom(automataEnv string) {
 	switch automataEnv {
 	case "lle":
@@ -38,10 +37,7 @@ func commandexec(env string) {
 	var DEPLOYS = "/deployment.yaml"
 	var DEP_PATH = KUBERNETES_PATH + DEPLOYS
 	var SECRETS_PATH = KUBERNETES_PATH + SECRETS
-	
 
-	// pipecommand:= exec.Command("kubectl", "logs","--tail=100", "frontend-3823415956-1j9ww")
-	// printCmd(pipecommand)
 	gcloudComputeSet := exec.Command("gcloud", "config", "set", "compute/zone", ZONE)
 	printCmd(gcloudComputeSet)
 
@@ -54,7 +50,7 @@ func commandexec(env string) {
 	deploymentReplace := exec.Command("sed", "-i", SEDREP, DEP_PATH)
 	printCmd(deploymentReplace)
 
-	secretReplace := exec.Command("sed", "-i", SEDREP,SECRETS_PATH )
+	secretReplace := exec.Command("sed", "-i", SEDREP, SECRETS_PATH)
 	printCmd(secretReplace)
 
 	createConfigMap := exec.Command("kubectl", "create", "configmap", "sites-config-"+env, "--from-file=./kubernetes/configmap", "--namespace", "ingress-"+env)
@@ -69,23 +65,19 @@ func commandexec(env string) {
 	revertsecret := exec.Command("cp", "secret.json", KUBERNETES_PATH)
 	printCmd(revertsecret)
 
-	revertdeploy := exec.Command("cp", "deployment.yaml", "./kubernetes")
+	revertdeploy := exec.Command("cp", "deployment.yaml", KUBERNETES_PATH)
 	printCmd(revertdeploy)
 }
 
-
+//Iterating HLE Environments
 func hle() {
 	hle := [3]string{"relqa", "perf", "uat"}
 	for j := 0; j < len(hle); j++ {
 		commandexec(hle[j])
 	}
 }
-func prod() {
-	prod := [2]string{"preprod", "prod"}
-	for j := 0; j < len(prod); j++ {
-		commandexec(prod[j])
-	}
-}
+
+//Iterating LLE Environments
 func lle() {
 	lle := [3]string{"dev", "qa", "reldev"}
 	for j := 0; j < len(lle); j++ {
@@ -93,7 +85,15 @@ func lle() {
 	}
 }
 
-//Here we are printing the Standard Output and Standard Error 
+//Iterating PROD Environments
+func prod() {
+	prod := [2]string{"preprod", "prod"}
+	for j := 0; j < len(prod); j++ {
+		commandexec(prod[j])
+	}
+}
+
+//Here we are printing the Standard Output and Standard Error
 func printCmd(cmd *exec.Cmd) {
 	//cmd := exec.Command("go", "version")
 
@@ -108,6 +108,7 @@ func printCmd(cmd *exec.Cmd) {
 		return
 	}
 	fmt.Print(string(cmdOutput.Bytes()))
+}
 
 /*Start of the program - Entry Point*/
 func main() {
